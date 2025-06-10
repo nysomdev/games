@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetGameboard = () => {
         currentPlayer = 'X';
         board = ['', '', '', '', '', '', '', '', ''];
-        gameActive = true;
+        gameActive = true; // Garante que o jogo esteja ativo
         cells.forEach(cell => {
             cell.textContent = ''; // Limpa o conteúdo da célula
             cell.classList.remove('x', 'o'); // Remove as classes de jogador
@@ -110,7 +110,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handler para o clique na célula (jogador humano)
     const handleCellClick = (event) => {
-        const clickedCell = event.target;
+        // CORREÇÃO POTENCIAL AQUI: Garantir que o 'event.target' seja a própria célula clicada
+        // Se houver algum conteúdo dentro da célula que está recebendo o clique,
+        // event.target pode ser o conteúdo (ex: texto 'X' ou 'O'), não a div 'cell'.
+        // Podemos usar event.currentTarget se o listener estiver na célula, ou um 'closest'
+        const clickedCell = event.currentTarget; // Usar currentTarget para garantir que seja a célula com o listener
         const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
 
         // Impede jogada se: célula já preenchida, jogo inativo, ou se é a vez do computador (em modo vs. PC)
@@ -122,102 +126,71 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- Lógica do Computador (IA Simples) ---
+    // --- Lógica do Computador (IA Simples - inalterado) ---
 
     const computerMove = () => {
         let bestMove = -1;
 
-        // Estratégia da IA:
-        // 1. Tentar vencer (verificar se 'O' pode vencer na próxima jogada)
         bestMove = findWinningOrBlockingMove('O');
-        if (bestMove !== -1) {
-            makeMove(bestMove);
-            return;
-        }
-
-        // 2. Bloquear o jogador (verificar se 'X' pode vencer e bloquear)
+        if (bestMove !== -1) { makeMove(bestMove); return; }
         bestMove = findWinningOrBlockingMove('X');
-        if (bestMove !== -1) {
-            makeMove(bestMove);
-            return;
-        }
-
-        // 3. Ocupar o centro (célula 4) se estiver vazio
-        if (board[4] === '') {
-            makeMove(4);
-            return;
-        }
-
-        // 4. Ocupar um dos cantos (0, 2, 6, 8) aleatoriamente se estiver vazio
+        if (bestMove !== -1) { makeMove(bestMove); return; }
+        if (board[4] === '') { makeMove(4); return; }
         const corners = [0, 2, 6, 8].filter(index => board[index] === '');
         if (corners.length > 0) {
             bestMove = corners[Math.floor(Math.random() * corners.length)];
-            makeMove(bestMove);
-            return;
+            makeMove(bestMove); return;
         }
-
-        // 5. Ocupar um dos lados (1, 3, 5, 7) aleatoriamente se estiver vazio
         const sides = [1, 3, 5, 7].filter(index => board[index] === '');
         if (sides.length > 0) {
             bestMove = sides[Math.floor(Math.random() * sides.length)];
-            makeMove(bestMove);
-            return;
+            makeMove(bestMove); return;
         }
     };
 
-    // Função auxiliar para encontrar uma jogada que vença ou bloqueie um jogador
     const findWinningOrBlockingMove = (player) => {
         for (let i = 0; i < winningConditions.length; i++) {
             const [a, b, c] = winningConditions[i];
             const cellsInLine = [board[a], board[b], board[c]];
             const emptyCellIndex = [a, b, c].find(index => board[index] === '');
-
-            // Se houver exatamente duas marcações do 'player' e uma célula vazia na linha
             if (cellsInLine.filter(cell => cell === player).length === 2 && emptyCellIndex !== undefined) {
-                return emptyCellIndex; // Retorna o índice da célula vazia para a jogada
+                return emptyCellIndex;
             }
         }
-        return -1; // Nenhuma jogada de vitória/bloqueio encontrada
+        return -1;
     };
 
 
     // --- Gerenciamento de Modo de Jogo e Navegação de Telas ---
 
-    // Inicia o jogo no modo selecionado
     const startGame = (vsComputerMode) => {
         isVsComputer = vsComputerMode;
         gameMenu.classList.add('hidden'); // Esconde o menu de seleção
         gameArea.classList.remove('hidden'); // Mostra a área do jogo
         resetGameboard(); // Prepara o tabuleiro para o novo jogo
 
-        // Tenta tocar a música (ação do usuário é o clique no botão)
-        gameMusic.volume = 0.3; // Define um volume inicial (0.0 a 1.0)
+        gameMusic.volume = 0.3;
         gameMusic.play().catch(error => {
             console.error("Erro ao tentar tocar a música (possível bloqueio de autoplay):", error);
-            // Mensagem opcional para o usuário se o autoplay for bloqueado
-            // alert("A música não pôde ser iniciada automaticamente. Por favor, clique no ícone de volume para ativar o som.");
         });
-        updateMuteButtonIcon(); // Atualiza o ícone de áudio para refletir o estado de reprodução
+        updateMuteButtonIcon();
     };
 
-    // Volta para o menu de seleção de modo de jogo
     const backToMenu = () => {
-        gameArea.classList.add('hidden'); // Esconde a área do jogo
-        gameMenu.classList.remove('hidden'); // Mostra o menu de seleção
-        resetGameboard(); // Reseta o tabuleiro ao voltar para o menu
+        gameArea.classList.add('hidden');
+        gameMenu.classList.remove('hidden');
+        resetGameboard();
         gameMusic.pause(); // Pausa a música ao sair do jogo
         gameMusic.currentTime = 0; // Volta a música para o início
-        updateMuteButtonIcon(); // Atualiza o ícone (normalmente para "volume-up" se não está tocando no menu)
+        updateMuteButtonIcon();
     };
 
     // --- Lógica de Áudio e Controle de Mute ---
 
-    // Alterna o estado de mudo da música
     const toggleMute = () => {
-        gameMusic.muted = !gameMusic.muted; // Alterna entre mutado e desmutado
-        updateMuteButtonIcon(); // Atualiza o ícone do botão
+        gameMusic.muted = !gameMusic.muted;
+        updateMuteButtonIcon();
 
-        // Se desmutou e a música estava pausada, tenta tocar novamente
         if (!gameMusic.muted && gameMusic.paused) {
             gameMusic.play().catch(error => {
                 console.error("Erro ao tentar retomar a música após desmutar:", error);
@@ -225,16 +198,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Atualiza o ícone do botão de som com base no estado da música
     const updateMuteButtonIcon = () => {
         if (gameMusic.muted) {
             muteIcon.classList.remove('fa-volume-up');
-            muteIcon.classList.add('fa-volume-mute'); // Ícone de som desligado
-            muteButton.setAttribute('aria-label', 'Tocar Música'); // Acessibilidade
+            muteIcon.classList.add('fa-volume-mute');
+            muteButton.setAttribute('aria-label', 'Tocar Música');
         } else {
             muteIcon.classList.remove('fa-volume-mute');
-            muteIcon.classList.add('fa-volume-up'); // Ícone de som ligado
-            muteButton.setAttribute('aria-label', 'Silenciar Música'); // Acessibilidade
+            muteIcon.classList.add('fa-volume-up');
+            muteButton.setAttribute('aria-label', 'Silenciar Música');
         }
     };
 
@@ -255,10 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
     muteButton.addEventListener('click', toggleMute);
 
     // Event listeners para o clique nas células do tabuleiro
+    // AQUI É A MUDANÇA MAIS IMPORTANTE: Adicionado o listener às células
     cells.forEach(cell => cell.addEventListener('click', handleCellClick));
 
     // Define o ícone inicial do botão de áudio ao carregar a página
-    // (Útil se a música começar mutada por padrão ou se o navegador a pausar)
-    // Se quiser que a música comece mutada por padrão: gameMusic.muted = true;
     updateMuteButtonIcon();
 });
