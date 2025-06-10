@@ -10,7 +10,6 @@
     --cell-hover-color: rgba(255, 255, 255, 0.1);
     --winning-line-color: rgba(255, 255, 255, 0.7); /* Branca semitransparente para a borda */
     --winning-line-thickness: 6px; /* Espessura da linha tracejada */
-    --winning-line-gap: 8px; /* Espaço entre os traços */
 
     /* Dimensões do tabuleiro para cálculo da linha de vitória */
     --cell-size: 100px;
@@ -23,13 +22,15 @@ body {
     background: var(--background-color);
     color: var(--text-color);
     display: flex;
-    flex-direction: column; /* Alterado para coluna para stackear container e autoria */
-    justify-content: center;
-    align-items: center;
+    flex-direction: column; /* Garante que os itens internos sejam dispostos em coluna */
+    justify-content: center; /* Centraliza verticalmente (eixo principal) */
+    align-items: center; /* Centraliza horizontalmente (eixo transversal) */
     min-height: 100vh;
     margin: 0;
     overflow: hidden; /* Evita scroll desnecessário */
     perspective: 1000px; /* Para efeitos 3D futuros, se desejar */
+    /* Adicionar um gap entre os itens filhos do body, se necessário */
+    gap: 20px; /* Espaço entre o .container e o .autoria */
 }
 
 .container {
@@ -235,14 +236,18 @@ button#backToMenuButton:active {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* NOVO ESTILO PARA A AUTORIA */
+/* ESTILO PARA A AUTORIA - AJUSTADO */
 .autoria {
     color: rgba(255, 255, 255, 0.4); /* Cor mais sutil */
     font-size: 0.9em;
-    margin-top: 25px; /* Espaçamento da parte de cima */
+    /* Remover margin-top aqui se o gap do body já for suficiente */
+    /* Ou ajustar para dar um espaço extra específico */
+    padding-top: 10px; /* Adiciona um pequeno padding acima do texto para espaçamento */
     text-align: center;
     letter-spacing: 0.5px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    /* Se a intenção era que ele ficasse bem abaixo do container,
+       e o gap do body não for suficiente, o margin-top pode ser usado. */
 }
 
 
@@ -290,7 +295,8 @@ button#backToMenuButton:active {
     }
 
     .autoria {
-        margin-top: 20px; /* Ajuste para telas pequenas */
+        margin-top: 15px; /* Ajuste para telas pequenas, se o gap do body for mantido */
         font-size: 0.8em;
+        padding-top: 5px; /* Ajuste de padding para telas pequenas */
     }
 }
