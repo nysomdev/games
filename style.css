@@ -1,3 +1,4 @@
+/* Variáveis CSS para facilitar a manutenção de cores e tamanhos */
 :root {
     --primary-color: #4CAF50; /* Verde vibrante */
     --secondary-color: #FFC107; /* Amarelo (para contraste ou jogador O) */
@@ -8,46 +9,47 @@
     --board-background: #2b2b4d; /* Azul um pouco mais claro para o tabuleiro */
     --cell-background: rgba(0, 0, 0, 0.2);
     --cell-hover-color: rgba(255, 255, 255, 0.1);
-    --winning-line-color: rgba(255, 255, 255, 0.7); /* Branca semitransparente para a borda */
-    --winning-line-thickness: 6px; /* Espessura da linha tracejada */
 
-    /* Dimensões do tabuleiro para cálculo da linha de vitória */
+    /* Dimensões do tabuleiro (para cálculo da posição dos elementos internos) */
     --cell-size: 100px;
     --gap-size: 10px;
     --board-total-size: calc(3 * var(--cell-size) + 2 * var(--gap-size)); /* 320px */
 }
 
+/* Estilos globais do corpo da página */
 body {
     font-family: 'Montserrat', sans-serif;
     background: var(--background-color);
     color: var(--text-color);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    flex-direction: column; /* Organiza os filhos (container, autoria) em coluna */
+    justify-content: center; /* Centraliza verticalmente o conteúdo */
+    align-items: center; /* Centraliza horizontalmente o conteúdo */
+    min-height: 100vh; /* Garante que o corpo ocupe a altura total da viewport */
     margin: 0;
-    overflow: hidden;
-    perspective: 1000px;
-    gap: 20px;
+    overflow: hidden; /* Evita barras de rolagem desnecessárias */
+    perspective: 1000px; /* Para efeitos 3D no container */
+    gap: 20px; /* Espaçamento entre o .container e o .autoria */
 }
 
+/* Estilo do container principal do jogo */
 .container {
     background-color: rgba(0, 0, 0, 0.3);
     padding: 30px 40px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     text-align: center;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px); /* Efeito de vidro fosco */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transform: rotateX(5deg) rotateY(5deg);
-    transition: transform 0.5s ease-in-out;
+    transform: rotateX(5deg) rotateY(5deg); /* Leve inclinação para dar profundidade */
+    transition: transform 0.5s ease-in-out; /* Transição suave na rotação */
 }
 
 .container:hover {
-    transform: rotateX(0deg) rotateY(0deg);
+    transform: rotateX(0deg) rotateY(0deg); /* Desfaz a inclinação ao passar o mouse */
 }
 
+/* Estilo do título do jogo */
 h1 {
     font-family: 'Press Start 2P', cursive;
     color: var(--primary-color);
@@ -57,10 +59,11 @@ h1 {
     letter-spacing: 2px;
 }
 
+/* Estilos do menu inicial de seleção de modo de jogo */
 .game-menu {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px; /* Espaçamento entre os botões do menu */
     margin-top: 20px;
 }
 
@@ -96,10 +99,12 @@ h1 {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Classe para esconder elementos (usada para alternar entre menu e jogo) */
 .hidden {
     display: none !important;
 }
 
+/* Estilo do tabuleiro do jogo */
 .game-board {
     display: grid;
     grid-template-columns: repeat(3, var(--cell-size));
@@ -112,18 +117,20 @@ h1 {
     margin-bottom: 25px;
     position: relative;
     overflow: hidden;
-    animation: pulse-border 2s infinite alternate ease-in-out;
-    width: var(--board-total-size);
-    height: var(--board-total-size);
-    margin-left: auto;
-    margin-right: auto;
+    animation: pulse-border 2s infinite alternate ease-in-out; /* Borda pulsante */
+    width: var(--board-total-size); /* Largura total do grid */
+    height: var(--board-total-size); /* Altura total do grid */
+    margin-left: auto; /* Centraliza o tabuleiro */
+    margin-right: auto; /* Centraliza o tabuleiro */
 }
 
+/* Animação da borda do tabuleiro */
 @keyframes pulse-border {
     0% { box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.7), 0 0 0px var(--primary-color); }
     100% { box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.7), 0 0 20px var(--primary-color); }
 }
 
+/* Estilo das células individuais do tabuleiro */
 .cell {
     width: var(--cell-size);
     height: var(--cell-size);
@@ -141,12 +148,14 @@ h1 {
     overflow: hidden;
 }
 
+/* Efeito de hover nas células */
 .cell:hover:not(.x):not(.o) {
     background-color: var(--cell-hover-color);
     transform: scale(1.05);
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
+/* Efeito de brilho ao preencher a célula (passagem de luz) */
 .cell::before {
     content: '';
     position: absolute;
@@ -166,6 +175,7 @@ h1 {
     opacity: 1;
 }
 
+/* Cores específicas para os jogadores X e O */
 .cell.x {
     color: var(--player-x-color);
 }
@@ -174,26 +184,29 @@ h1 {
     color: var(--player-o-color);
 }
 
+/* Estilo da mensagem de status do jogo */
 .game-status {
     font-size: 1.5em;
     margin-bottom: 25px;
     color: var(--secondary-color);
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     animation: fade-in 1s ease-out;
-    min-height: 1.5em;
+    min-height: 1.5em; /* Garante que a área do texto não "pule" */
 }
 
+/* Animação para a mensagem de status */
 @keyframes fade-in {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Grupo de botões (Reiniciar, Menu Anterior, Silenciar) */
 .button-group {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
-    flex-wrap: wrap;
+    justify-content: center; /* Centraliza os botões no grupo */
+    gap: 15px; /* Espaçamento entre os botões */
+    margin-top: 15px; /* Margem superior para separar do status */
+    flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas pequenas */
 }
 
 .button-group button {
@@ -213,16 +226,16 @@ h1 {
     justify-content: center; /* Centraliza horizontalmente o conteúdo */
 }
 
-/* Estilo específico para o botão "Voltar" */
+/* Estilo específico para o botão "Menu Anterior" */
 button#backToMenuButton {
-    background-color: #6c757d;
+    background-color: #6c757d; /* Cinza para o botão de voltar */
 }
 
 button#backToMenuButton:hover {
     background-color: #5a6268;
 }
 
-/* Estilo específico para o botão de ícone */
+/* Estilo específico para o botão de ícone (Silenciar/Tocar) */
 .icon-button {
     width: 45px; /* Tamanho fixo para o botão de ícone */
     height: 45px; /* Altura fixa para o botão de ícone */
@@ -235,32 +248,34 @@ button#backToMenuButton:hover {
     background-color: #a39947;
 }
 
+/* Efeitos de hover e active para todos os botões */
 button#restartButton:hover,
 button#backToMenuButton:hover,
-.icon-button:hover { /* Inclui o novo botão no hover */
+.icon-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 button#restartButton:active,
 button#backToMenuButton:active,
-.icon-button:active { /* Inclui o novo botão no active */
+.icon-button:active {
     transform: translateY(0);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Estilo do texto de autoria */
 .autoria {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.4); /* Cor mais sutil */
     font-size: 0.9em;
-    padding-top: 10px;
+    padding-top: 10px; /* Espaço entre o container e a autoria */
     text-align: center;
     letter-spacing: 0.5px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-
-/* Responsividade */
+/* Responsividade para telas menores (smartphones) */
 @media (max-width: 480px) {
+    /* Ajusta as variáveis para tamanhos menores */
     :root {
         --cell-size: 80px;
         --gap-size: 8px;
@@ -269,7 +284,7 @@ button#backToMenuButton:active,
 
     .container {
         padding: 20px;
-        margin: 15px;
+        margin: 15px; /* Margem nas laterais para não colar nas bordas da tela */
     }
 
     h1 {
@@ -296,13 +311,13 @@ button#backToMenuButton:active,
         margin-bottom: 20px;
     }
 
-    .button-group button {
+    .button-group button { /* Ajusta o padding e tamanho dos botões no grupo para mobile */
         padding: 10px 15px;
         font-size: 0.9em;
-        flex-grow: 1;
+        flex-grow: 1; /* Permite que os botões de texto preencham o espaço disponível */
     }
 
-    .icon-button { /* Ajuste para o botão de ícone em mobile */
+    .icon-button { /* Ajuste específico para o botão de ícone em mobile */
         width: 40px;
         height: 40px;
         font-size: 1.1em;
@@ -310,7 +325,7 @@ button#backToMenuButton:active,
     }
 
     .autoria {
-        margin-top: 15px;
+        margin-top: 15px; /* Ajuste de margem superior para telas pequenas */
         font-size: 0.8em;
         padding-top: 5px;
     }
