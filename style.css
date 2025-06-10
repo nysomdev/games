@@ -23,6 +23,7 @@ body {
     background: var(--background-color);
     color: var(--text-color);
     display: flex;
+    flex-direction: column; /* Alterado para coluna para stackear container e autoria */
     justify-content: center;
     align-items: center;
     min-height: 100vh;
@@ -101,7 +102,7 @@ h1 {
     display: none !important;
 }
 
-/* Centraliza o tabuleiro */
+/* Centraliza o tabuleiro (já estava, mas revisado para garantir) */
 .game-board {
     display: grid;
     grid-template-columns: repeat(3, var(--cell-size));
@@ -234,8 +235,16 @@ button#backToMenuButton:active {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Remover ou ignorar as classes .winning-line, pois não vamos usá-las */
-/* ... (linhas e colunas etc. não serão criadas pelo JS) ... */
+/* NOVO ESTILO PARA A AUTORIA */
+.autoria {
+    color: rgba(255, 255, 255, 0.4); /* Cor mais sutil */
+    font-size: 0.9em;
+    margin-top: 25px; /* Espaçamento da parte de cima */
+    text-align: center;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 
 /* Responsividade */
 @media (max-width: 480px) {
@@ -278,5 +287,10 @@ button#backToMenuButton:active {
         padding: 10px 15px;
         font-size: 0.9em;
         flex-grow: 1; /* Permite que os botões preencham o espaço disponível */
+    }
+
+    .autoria {
+        margin-top: 20px; /* Ajuste para telas pequenas */
+        font-size: 0.8em;
     }
 }
