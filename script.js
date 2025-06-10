@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToMenuButton = document.getElementById('backToMenuButton');
     const muteButton = document.getElementById('muteButton');
     const gameMusic = document.getElementById('gameMusic');
-    const muteIcon = muteButton.querySelector('i'); // Seleciona o elemento <i> dentro do botão
+    const winSound = document.getElementById('winSound'); // NOVO: Seletor para o som de vitória
+    const muteIcon = muteButton.querySelector('i');
 
     // Variáveis de estado do jogo
     let currentPlayer = 'X';
@@ -44,6 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.classList.remove('x', 'o'); // Remove as classes de jogador
         });
         displayMessage('É a vez do Jogador X'); // Define a mensagem inicial
+
+        // Opcional: Pausar o som de vitória se ele estiver tocando e o jogo for reiniciado rapidamente
+        if (!winSound.paused) {
+            winSound.pause();
+            winSound.currentTime = 0;
+        }
     };
 
     // Verifica o status atual do jogo (vitória ou empate)
@@ -70,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (roundWon) {
             displayMessage(`Jogador ${currentPlayer} Venceu! 🎉`);
             gameActive = false; // Desativa o jogo
+            playWinSound(); // NOVO: Toca o som de vitória
             return true; // Retorna true para indicar que o jogo terminou com vitória
         }
 
@@ -78,46 +86,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (roundDraw) {
             displayMessage('Empate! 🤝');
             gameActive = false; // Desativa o jogo
+            // Opcional: Se quiser um som diferente para empate, adicione aqui
             return true; // Retorna true para indicar que o jogo terminou com empate
         }
 
         return false; // Retorna false para indicar que o jogo ainda está ativo
     };
 
-    // Troca o jogador atual
+    // Troca o jogador atual (inalterado)
     const switchPlayer = () => {
         currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
         displayMessage(`É a vez do Jogador ${currentPlayer}`);
     };
 
-    // --- Lógica de Jogada (Humano e IA) ---
+    // --- Lógica de Jogada (Humano e IA - inalterado) ---
 
-    // Função principal para realizar uma jogada
     const makeMove = (index) => {
-        board[index] = currentPlayer; // Atualiza o tabuleiro interno
-        cells[index].textContent = currentPlayer; // Atualiza a célula na UI
-        cells[index].classList.add(currentPlayer.toLowerCase()); // Adiciona classe para estilo
+        board[index] = currentPlayer;
+        cells[index].textContent = currentPlayer;
+        cells[index].classList.add(currentPlayer.toLowerCase());
 
-        const gameResult = checkGameStatus(); // Verifica se a jogada terminou o jogo
-        if (!gameResult) { // Se o jogo não terminou
-            switchPlayer(); // Troca o jogador
-            // Se for modo contra computador e a vez do computador, faz a jogada da IA
+        const gameResult = checkGameStatus();
+        if (!gameResult) {
+            switchPlayer();
             if (isVsComputer && currentPlayer === 'O' && gameActive) {
-                setTimeout(computerMove, 500); // Pequeno atraso para a jogada da IA parecer natural
+                setTimeout(computerMove, 500);
             }
         }
     };
 
-    // Handler para o clique na célula (jogador humano)
     const handleCellClick = (event) => {
-        // CORREÇÃO POTENCIAL AQUI: Garantir que o 'event.target' seja a própria célula clicada
-        // Se houver algum conteúdo dentro da célula que está recebendo o clique,
-        // event.target pode ser o conteúdo (ex: texto 'X' ou 'O'), não a div 'cell'.
-        // Podemos usar event.currentTarget se o listener estiver na célula, ou um 'closest'
-        const clickedCell = event.currentTarget; // Usar currentTarget para garantir que seja a célula com o listener
+        const clickedCell = event.currentTarget;
         const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
 
-        // Impede jogada se: célula já preenchida, jogo inativo, ou se é a vez do computador (em modo vs. PC)
         if (board[clickedCellIndex] !== '' || !gameActive || (isVsComputer && currentPlayer === 'O')) {
             return;
         }
@@ -127,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Lógica do Computador (IA Simples - inalterado) ---
-
     const computerMove = () => {
         let bestMove = -1;
 
@@ -165,9 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startGame = (vsComputerMode) => {
         isVsComputer = vsComputerMode;
-        gameMenu.classList.add('hidden'); // Esconde o menu de seleção
-        gameArea.classList.remove('hidden'); // Mostra a área do jogo
-        resetGameboard(); // Prepara o tabuleiro para o novo jogo
+        gameMenu.classList.add('hidden');
+        gameArea.classList.remove('hidden');
+        resetGameboard();
 
         gameMusic.volume = 0.3;
         gameMusic.play().catch(error => {
@@ -180,8 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
         gameArea.classList.add('hidden');
         gameMenu.classList.remove('hidden');
         resetGameboard();
-        gameMusic.pause(); // Pausa a música ao sair do jogo
-        gameMusic.currentTime = 0; // Volta a música para o início
+        gameMusic.pause();
+        gameMusic.currentTime = 0;
         updateMuteButtonIcon();
     };
 
@@ -210,26 +210,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // NOVO: Função para tocar o som de vitória
+    const playWinSound = () => {
+        // Pausar a música de fundo brevemente para o som de vitória ser ouvido claramente
+        gameMusic.volume = 0.1; // Reduz o volume da música de fundo
+        winSound.volume = 0.6; // Define um volume para o som de vitória
+        winSound.currentTime = 0; // Garante que o som de vitória sempre comece do início
+        winSound.play().catch(error => {
+            console.error("Erro ao tocar som de vitória:", error);
+        });
+
+        // Opcional: Restaurar o volume da música de fundo após o som de vitória terminar
+        winSound.onended = () => {
+            if (!gameMusic.muted) { // Só restaura se a música de fundo não estiver mutada
+                gameMusic.volume = 0.3; // Volta para o volume original
+            }
+        };
+    };
+
 
     // --- Configuração de Event Listeners ---
 
-    // Event listeners para os botões de seleção de modo
     playerVsPlayerButton.addEventListener('click', () => startGame(false));
     playerVsComputerButton.addEventListener('click', () => startGame(true));
 
-    // Event listener para o botão "Reiniciar Jogo"
     restartButton.addEventListener('click', resetGameboard);
 
-    // Event listener para o botão "Menu Anterior"
     backToMenuButton.addEventListener('click', backToMenu);
 
-    // Event listener para o botão de silenciar/tocar música
     muteButton.addEventListener('click', toggleMute);
 
-    // Event listeners para o clique nas células do tabuleiro
-    // AQUI É A MUDANÇA MAIS IMPORTANTE: Adicionado o listener às células
     cells.forEach(cell => cell.addEventListener('click', handleCellClick));
 
-    // Define o ícone inicial do botão de áudio ao carregar a página
     updateMuteButtonIcon();
 });
