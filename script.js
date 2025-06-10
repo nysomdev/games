@@ -10,11 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToMenuButton = document.getElementById('backToMenuButton');
     const muteButton = document.getElementById('muteButton');
     const gameMusic = document.getElementById('gameMusic');
-    const winSound = document.getElementById('winSound'); // NOVO: Seletor para o som de vitória
+    const playerWinSound = document.getElementById('playerWinSound'); // NOVO: Seletor para o som de vitória do jogador
+    const computerWinSound = document.getElementById('computerWinSound'); // NOVO: Seletor para o som de vitória do computador
     const muteIcon = muteButton.querySelector('i');
 
     // Variáveis de estado do jogo
-    let currentPlayer = 'X';
+    let currentPlayer = 'X'; // 'X' é sempre o jogador humano no modo vs. computador
     let board = ['', '', '', '', '', '', '', '', '']; // Representa o tabuleiro
     let gameActive = true; // True enquanto o jogo não terminou
     let isVsComputer = false; // True se o jogo é contra o computador
@@ -46,10 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         displayMessage('É a vez do Jogador X'); // Define a mensagem inicial
 
-        // Opcional: Pausar o som de vitória se ele estiver tocando e o jogo for reiniciado rapidamente
-        if (!winSound.paused) {
-            winSound.pause();
-            winSound.currentTime = 0;
+        // Opcional: Pausar os sons de vitória se eles estiverem tocando e o jogo for reiniciado rapidamente
+        if (!playerWinSound.paused) {
+            playerWinSound.pause();
+            playerWinSound.currentTime = 0;
+        }
+        if (!computerWinSound.paused) {
+            computerWinSound.pause();
+            computerWinSound.currentTime = 0;
         }
     };
 
@@ -77,7 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (roundWon) {
             displayMessage(`Jogador ${currentPlayer} Venceu! 🎉`);
             gameActive = false; // Desativa o jogo
-            playWinSound(); // NOVO: Toca o som de vitória
+
+            // NOVO: Toca o som de vitória apropriado
+            if (isVsComputer && currentPlayer === 'O') { // Se for modo vs. Computador e o 'O' (computador) venceu
+                playComputerWinSound();
+            } else { // Se for jogador vs. jogador, ou jogador vs. computador e o 'X' (humano) venceu
+                playPlayerWinSound();
+            }
             return true; // Retorna true para indicar que o jogo terminou com vitória
         }
 
@@ -210,20 +221,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // NOVO: Função para tocar o som de vitória
-    const playWinSound = () => {
-        // Pausar a música de fundo brevemente para o som de vitória ser ouvido claramente
+    // NOVA: Função para tocar o som de vitória do JOGADOR
+    const playPlayerWinSound = () => {
         gameMusic.volume = 0.1; // Reduz o volume da música de fundo
-        winSound.volume = 0.6; // Define um volume para o som de vitória
-        winSound.currentTime = 0; // Garante que o som de vitória sempre comece do início
-        winSound.play().catch(error => {
-            console.error("Erro ao tocar som de vitória:", error);
+        playerWinSound.volume = 0.6; // Define um volume para o som de vitória do jogador
+        playerWinSound.currentTime = 0; // Garante que o som sempre comece do início
+        playerWinSound.play().catch(error => {
+            console.error("Erro ao tocar som de vitória do jogador:", error);
         });
 
-        // Opcional: Restaurar o volume da música de fundo após o som de vitória terminar
-        winSound.onended = () => {
-            if (!gameMusic.muted) { // Só restaura se a música de fundo não estiver mutada
-                gameMusic.volume = 0.3; // Volta para o volume original
+        // Restaurar o volume da música de fundo após o som de vitória terminar
+        playerWinSound.onended = () => {
+            if (!gameMusic.muted) {
+                gameMusic.volume = 0.3;
+            }
+        };
+    };
+
+    // NOVA: Função para tocar o som de vitória do COMPUTADOR
+    const playComputerWinSound = () => {
+        gameMusic.volume = 0.1; // Reduz o volume da música de fundo
+        computerWinSound.volume = 0.6; // Define um volume para o som de vitória do computador
+        computerWinSound.currentTime = 0; // Garante que o som sempre comece do início
+        computerWinSound.play().catch(error => {
+            console.error("Erro ao tocar som de vitória do computador:", error);
+        });
+
+        // Restaurar o volume da música de fundo após o som de vitória terminar
+        computerWinSound.onended = () => {
+            if (!gameMusic.muted) {
+                gameMusic.volume = 0.3;
             }
         };
     };
