@@ -6,23 +6,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const playerVsComputerButton = document.getElementById('playerVsComputerButton');
     const gameStatus = document.getElementById('gameStatus');
     const restartButton = document.getElementById('restartButton');
-    const backToMenuButton = document.getElementById('backToMenuButton'); // Novo seletor
+    const backToMenuButton = document.getElementById('backToMenuButton');
+    const muteButton = document.getElementById('muteButton');
+    const gameMusic = document.getElementById('gameMusic');
+    const muteIcon = muteButton.querySelector('i'); // NOVO: Seletor para o elemento <i> do ícone
 
     let currentPlayer = 'X';
     let board = ['', '', '', '', '', '', '', '', ''];
     let gameActive = true;
-    let isVsComputer = false; // Nova variável para controlar o modo de jogo
+    let isVsComputer = false;
+    let isMusicPlaying = false; // Flag para controlar o estado da música (se está tocando ou pausada)
 
     // Condições de vitória
     const winningConditions = [
-        [0, 1, 2], // Linhas
+        [0, 1, 2],
         [3, 4, 5],
         [6, 7, 8],
-        [0, 3, 6], // Colunas
+        [0, 3, 6],
         [1, 4, 7],
         [2, 5, 8],
-        [0, 4, 8], // Diagonais: principal
-        [2, 4, 6]  // Diagonais: secundária
+        [0, 4, 8],
+        [2, 4, 6]
     ];
 
     // --- Funções Auxiliares ---
@@ -50,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const clickedCell = event.target;
         const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
 
-        // Se a célula já está preenchida, o jogo acabou ou não é a vez do jogador (no modo contra computador)
         if (board[clickedCellIndex] !== '' || !gameActive || (isVsComputer && currentPlayer === 'O')) {
             return;
         }
@@ -58,23 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
         makeMove(clickedCellIndex);
     };
 
-    // Função para realizar a jogada (compartilhada entre jogador e computador)
     const makeMove = (index) => {
         board[index] = currentPlayer;
         cells[index].textContent = currentPlayer;
         cells[index].classList.add(currentPlayer.toLowerCase());
 
         const gameResult = checkGameStatus();
-        if (!gameResult) { // Se o jogo não terminou
+        if (!gameResult) {
             switchPlayer();
             if (isVsComputer && currentPlayer === 'O' && gameActive) {
-                // Pequeno atraso para o movimento do computador parecer mais natural
                 setTimeout(computerMove, 500);
             }
         }
     };
 
-    // Verifica o status do jogo (vitória ou empate)
     const checkGameStatus = () => {
         let roundWon = false;
         for (let i = 0; i < winningConditions.length; i++) {
@@ -95,20 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (roundWon) {
             displayMessage(`Jogador ${currentPlayer} Venceu! 🎉`);
             gameActive = false;
-            return true; // Jogo terminou com vitória
+            return true;
         }
 
         let roundDraw = !board.includes('');
         if (roundDraw) {
             displayMessage('Empate! 🤝');
             gameActive = false;
-            return true; // Jogo terminou com empate
+            return true;
         }
 
-        return false; // Jogo continua
+        return false;
     };
 
-    // Troca o jogador atual
     const switchPlayer = () => {
         currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
         displayMessage(`É a vez do Jogador ${currentPlayer}`);
@@ -116,36 +115,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica do Computador (IA Simples) ---
     const computerMove = () => {
-        // Estratégia da IA:
-        // 1. Tentar vencer
-        // 2. Bloquear o jogador
-        // 3. Ocupar o centro
-        // 4. Ocupar cantos
-        // 5. Ocupar lados vazios
-
         let bestMove = -1;
 
-        // 1. Tentar vencer (verificar se 'O' pode vencer)
         bestMove = findWinningOrBlockingMove('O');
         if (bestMove !== -1) {
             makeMove(bestMove);
             return;
         }
 
-        // 2. Bloquear o jogador (verificar se 'X' pode vencer e bloquear)
         bestMove = findWinningOrBlockingMove('X');
         if (bestMove !== -1) {
             makeMove(bestMove);
             return;
         }
 
-        // 3. Ocupar o centro (célula 4)
         if (board[4] === '') {
             makeMove(4);
             return;
         }
 
-        // 4. Ocupar cantos (0, 2, 6, 8)
         const corners = [0, 2, 6, 8].filter(index => board[index] === '');
         if (corners.length > 0) {
             bestMove = corners[Math.floor(Math.random() * corners.length)];
@@ -153,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 5. Ocupar lados vazios (1, 3, 5, 7)
         const sides = [1, 3, 5, 7].filter(index => board[index] === '');
         if (sides.length > 0) {
             bestMove = sides[Math.floor(Math.random() * sides.length)];
@@ -162,19 +149,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Função auxiliar para encontrar uma jogada vencedora ou de bloqueio para um dado jogador
     const findWinningOrBlockingMove = (player) => {
         for (let i = 0; i < winningConditions.length; i++) {
             const [a, b, c] = winningConditions[i];
             const cellsInLine = [board[a], board[b], board[c]];
             const emptyCellIndex = [a, b, c].find(index => board[index] === '');
 
-            // Se houver exatamente duas do 'player' e uma vazia, essa é a jogada
             if (cellsInLine.filter(cell => cell === player).length === 2 && emptyCellIndex !== undefined) {
                 return emptyCellIndex;
             }
         }
-        return -1; // Nenhuma jogada de vitória/bloqueio encontrada
+        return -1;
     };
 
 
@@ -182,23 +167,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startGame = (vsComputerMode) => {
         isVsComputer = vsComputerMode;
-        gameMenu.classList.add('hidden'); // Esconde o menu
-        gameArea.classList.remove('hidden'); // Mostra a área do jogo
-        resetGameboard(); // Reinicia o tabuleiro
+        gameMenu.classList.add('hidden');
+        gameArea.classList.remove('hidden');
+        resetGameboard();
+        playMusic(); // Começa a tocar a música ao iniciar o jogo
     };
 
     const backToMenu = () => {
-        gameArea.classList.add('hidden'); // Esconde a área do jogo
-        gameMenu.classList.remove('hidden'); // Mostra o menu
-        resetGameboard(); // Opcional: reseta o tabuleiro ao voltar para o menu
+        gameArea.classList.add('hidden');
+        gameMenu.classList.remove('hidden');
+        resetGameboard();
+        // Não pausa a música aqui se ela for tocar no menu.
+        // Se a música deve parar *totalmente* ao voltar ao menu, então pause aqui.
+        // Se ela deve continuar tocando no menu, então não faça nada aqui.
+        // Pelo que entendi da requisição anterior, ela para ao voltar.
+        pauseMusic();
+        updateMuteButtonIcon(); // NOVO: Atualiza o ícone ao voltar para o menu
+    };
+
+    // --- Lógica de Áudio ---
+    const playMusic = () => {
+        if (gameMusic.paused && !gameMusic.muted) { // Só toca se estiver pausada e não mutada
+            gameMusic.volume = 0.3;
+            gameMusic.play()
+                .then(() => {
+                    isMusicPlaying = true;
+                    updateMuteButtonIcon(); // NOVO: Atualiza o ícone após tocar
+                })
+                .catch(error => {
+                    console.error("Erro ao tentar tocar a música:", error);
+                });
+        }
+    };
+
+    const pauseMusic = () => {
+        if (!gameMusic.paused) {
+            gameMusic.pause();
+            isMusicPlaying = false;
+        }
+        updateMuteButtonIcon(); // NOVO: Atualiza o ícone após pausar
+    };
+
+    const toggleMute = () => {
+        gameMusic.muted = !gameMusic.muted; // Alterna o estado de mudo
+        updateMuteButtonIcon(); // NOVO: Atualiza o ícone
+        if (!gameMusic.muted && gameMusic.paused && isMusicPlaying) {
+             // Se desmutou e a música estava pausada mas deveria estar tocando, tente tocar
+             // Isso pode acontecer se o navegador pausou por inatividade, etc.
+             playMusic();
+        } else if (!gameMusic.muted && gameMusic.paused && !isMusicPlaying) {
+             // Se desmutou e a música está pausada e não deveria estar tocando (ex: antes de iniciar jogo),
+             // não faça nada.
+        } else if (gameMusic.muted && !gameMusic.paused) {
+             // Se mutou e a música estava tocando, ela continua tocando mas sem som.
+             // Manter isMusicPlaying como true para que ao desmutar ela retorne.
+        }
+    };
+
+    // NOVO: Função para atualizar o ícone do botão Silenciar/Tocar
+    const updateMuteButtonIcon = () => {
+        if (gameMusic.muted) {
+            muteIcon.classList.remove('fa-volume-up');
+            muteIcon.classList.add('fa-volume-mute');
+        } else {
+            muteIcon.classList.remove('fa-volume-mute');
+            muteIcon.classList.add('fa-volume-up');
+        }
     };
 
     // --- Event Listeners Iniciais ---
     playerVsPlayerButton.addEventListener('click', () => startGame(false));
     playerVsComputerButton.addEventListener('click', () => startGame(true));
     restartButton.addEventListener('click', resetGameboard);
-    backToMenuButton.addEventListener('click', backToMenu); // Novo event listener
-    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+    backToMenuButton.addEventListener('click', backToMenu);
+    muteButton.addEventListener('click', toggleMute);
 
-    // A tela inicial agora é o menu, então não há mensagem padrão ao carregar.
+    // Estado inicial do ícone (útil se a música começar mutada ou não tocar por padrão)
+    // gameMusic.muted = true; // Exemplo: se quiser que comece mutado
+    updateMuteButtonIcon(); // Define o ícone inicial com base no estado de 'muted'
 });
